@@ -1,0 +1,78 @@
+The problem:
+
+Given a 5 x 5 array of integers, write a program to find any saddle points in the given set. 
+A saddle point is a cell whose value is greater than or equal to any in its row and less than or equal to any in its column. 
+There may be more than one saddle point. Your program will print the coordinates of any found saddle points. 
+If there are none, it should print out “No saddle points found”. 
+
+Sample arrays:
+arr1 = [[39, 43, 49, 29, 18], [30, 47, 24, 29, 15], [49, 50, 39, 20, 33], [18, 38, 35, 32, 35], [29, 44, 18, 34, 44]]
+arr2 = [[50, 27, 36, 43, 39], [36, 14, 35, 40, 19], [20, 33, 48, 32, 40], [41, 40, 15, 22, 19], [21, 24, 24, 31, 18]]
+arr3 = [[39, 43, 49, 29, 18], [30, 47, 24, 29, 15], [49, 50, 39, 20, 33], [18, 38, 35, 32, 38], [29, 44, 18, 34, 44]]
+
+
+; locates elements by (row, column)
+; pulls the row, then pulls the element in the column
+; functional!
+(define (locate array row column)
+    (locater-y (locater-x array row column) row column))
+
+(define (locater-x array row column)                ; pulls the row
+    (cond
+        ((= row 1) (car array))
+        (else (locater-x (cdr array) (- row 1) column)))
+
+(define (locater-y array row column)                ; pulls the column, but must be given row
+    (cond                                           ; as array arg
+        ((= column 1) (car array))
+        (else (locater-y (cdr array) row (- column 1)))
+
+
+
+; the primary function
+; strategy: write check-row and check-column functionally, as predicates
+; uses AND as condition to check for a (row, column)
+; goes through all (row, column)
+; recursively collates the answers
+(define (find-saddle-pts array row col)
+    (cond
+        ((and (check-row array row col 1)
+              (check-column array row col 1))
+                   (cons (list row col) 
+                       (cond
+                            ((and (= row 5) (= col 5)) '())                   ; terminate
+                            ((= row 5) (find-saddle-pts array (+ row 1) col)) ; next row
+                            (else (find-saddle-pts array row (+ col 1 ))))))) ; next col
+        (else          (cond
+                            ((and (= row 5) (= col 5)) '())                   ; terminate
+                            ((= row 5) (find-saddle-pts array (+ row 1) col)) ; next row
+                            (else (find-saddle-pts array row (+ col 1 ))))))  ; next col
+
+
+; checks if candidate (row, column) is greater or equal to anything in the same row
+; cycles through columns
+; functional!
+(define (check-row? array row column start)
+    (cond
+        ((= start 6) #t) ; terminate after going through 1 to 5
+        ((>= (locate array row column) (locate array row start))
+            (check-row? array row column (+ start 1)))
+        (else #f)))
+        
+
+; checks if candidate (row, column) is less or equal to anything in the same column
+; cycles through rows
+; functional!
+(define (check-column? array row column start)
+    (cond
+        ((= start 6) #t) ; terminate after going through 1 to 5
+        ((<= (locate array row column) (locate array start column))
+            (check-column? array row column (+ start 1)))
+        (else #f)))
+
+
+; starts off the process
+(define (saddle-pts array)
+    (if (= (find-saddle-pts array 1 1) '())         ; if empty, there are no saddle points
+        (printf 'No saddle points found)            ; so print this
+        (find-saddle-pts array 1 1)))               ; otherwise return list of coordinates
