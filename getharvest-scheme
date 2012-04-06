@@ -15,17 +15,17 @@ arr3 = [[39, 43, 49, 29, 18], [30, 47, 24, 29, 15], [49, 50, 39, 20, 33], [18, 3
 ; pulls the row, then pulls the element in the column
 ; functional!
 (define (locate array row column)
-    (locater-y (locater-x array row column) row column))
+    (locater-y (locater-x array row) column))
 
-(define (locater-x array row column)                ; pulls the row
+(define (locater-x array row)                   ; pulls the row
     (cond
         ((= row 1) (car array))
-        (else (locater-x (cdr array) (- row 1) column)))
+        (else (locater-x (cdr array) (- row 1)))))
 
-(define (locater-y array row column)                ; pulls the column, but must be given row
-    (cond                                           ; as array arg
+(define (locater-y array column)                ; pulls the column, but must be given row
+    (cond                                       ; as array arg
         ((= column 1) (car array))
-        (else (locater-y (cdr array) row (- column 1)))
+        (else (locater-y (cdr array) (- column 1)))))
 
 
 
@@ -34,19 +34,20 @@ arr3 = [[39, 43, 49, 29, 18], [30, 47, 24, 29, 15], [49, 50, 39, 20, 33], [18, 3
 ; uses AND as condition to check for a (row, column)
 ; goes through all (row, column)
 ; recursively collates the answers
+; functional!
 (define (find-saddle-pts array row col)
     (cond
-        ((and (check-row array row col 1)
-              (check-column array row col 1))
+        ((and (check-row? array row col 1)
+              (check-column? array row col 1))
                    (cons (list row col) 
                        (cond
                             ((and (= row 5) (= col 5)) '())                   ; terminate
-                            ((= row 5) (find-saddle-pts array (+ row 1) col)) ; next row
-                            (else (find-saddle-pts array row (+ col 1 ))))))) ; next col
+                            ((= col 5) (find-saddle-pts array (+ row 1) 1))   ; next row
+                            (else (find-saddle-pts array row (+ col 1))))))   ; next col
         (else          (cond
                             ((and (= row 5) (= col 5)) '())                   ; terminate
-                            ((= row 5) (find-saddle-pts array (+ row 1) col)) ; next row
-                            (else (find-saddle-pts array row (+ col 1 ))))))  ; next col
+                            ((= col 5) (find-saddle-pts array (+ row 1) 1))   ; next row
+                            (else (find-saddle-pts array row (+ col 1)))))))  ; next col
 
 
 ; checks if candidate (row, column) is greater or equal to anything in the same row
@@ -73,6 +74,28 @@ arr3 = [[39, 43, 49, 29, 18], [30, 47, 24, 29, 15], [49, 50, 39, 20, 33], [18, 3
 
 ; starts off the process
 (define (saddle-pts array)
-    (if (= (find-saddle-pts array 1 1) '())         ; if empty, there are no saddle points
-        (printf 'No saddle points found)            ; so print this
-        (find-saddle-pts array 1 1)))               ; otherwise return list of coordinates
+    (cond ((= (find-saddle-pts array 1 1) '())       ; if empty, there are no saddle points
+           (display "No saddle points found"))       ; so print this
+          (else (find-saddle-pts array 1 1))))       ; otherwise return list of coordinates
+
+
+
+(define arr1 '((39 43 49 29 18) (30 47 24 29 15) (49 50 39 20 33) (18 38 35 32 35) (29 44 18 34 44)))
+
+(define arr2 '((50 27 36 43 39) (36 14 35 40 19) (20 33 48 32 40) (41 40 15 22 19) (21 24 24 31 18)))
+
+(define arr3 '((39 43 49 29 18) (30 47 24 29 15) (49 50 39 20 33) (18 38 35 32 38) (29 44 18 34 44)))
+
+
+; applying
+
+> (saddle-pts arr1)
+((4 2))
+
+> (saddle-pts arr2)
+No saddle points found
+
+> (saddle-pts arr3)
+((4 2))
+
+
